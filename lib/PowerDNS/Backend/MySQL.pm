@@ -14,11 +14,11 @@ PowerDNS::Backend::MySQL - Provides an interface to manipulate PowerDNS data in 
 
 =head1 VERSION
 
-Version 0.09
+Version 0.10
 
 =cut
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 =head1 SYNOPSIS
 
@@ -381,6 +381,29 @@ sub list_records($$)
 	
 	while ( my ($name,$content,$ttl,$prio) = $sth->fetchrow_array )
 	{ push @records , [ ($name,$content,$ttl,$prio) ]; } # push anonymous array on to end.
+	
+	return \@records;
+}
+
+=head2 list_all_records(\$domain)
+
+Expects a scalar reference to a domain name.
+Returns a reference to a two-dimensional array which contains the resource record name, type,
+content, TTL, and priority if any of the supplied domain.
+
+=cut
+
+sub list_all_records($)
+{
+	my $self = shift;
+	my $domain = shift;
+	my @records;
+	
+	my $sth = $self->{'dbh'}->prepare("SELECT name,type,content,ttl,prio FROM records WHERE domain_id = (SELECT id FROM domains WHERE name = ?)");
+	$sth->execute($$domain);
+	
+	while ( my ($name,$type,$content,$ttl,$prio) = $sth->fetchrow_array )
+	{ push @records , [ ($name,$type,$content,$ttl,$prio) ]; } # push anonymous array on to end.
 	
 	return \@records;
 }
@@ -981,7 +1004,7 @@ under the same terms as Perl itself.
 
 =head1 VERSION
 
-	0.09
+	0.10
 	$Id: MySQL.pm 1480 2007-12-04 19:29:23Z augie $
 
 =cut
