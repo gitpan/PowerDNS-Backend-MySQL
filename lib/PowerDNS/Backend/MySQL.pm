@@ -1,4 +1,3 @@
-# $Id: MySQL.pm 1480 2007-12-04 19:29:23Z augie $
 # Provides an interface to manipulate PowerDNS data in the MySQL Backend.
 
 package PowerDNS::Backend::MySQL;
@@ -14,11 +13,11 @@ PowerDNS::Backend::MySQL - Provides an interface to manipulate PowerDNS data in 
 
 =head1 VERSION
 
-Version 0.10
+Version 0.11
 
 =cut
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 =head1 SYNOPSIS
 
@@ -220,6 +219,24 @@ sub add_domain($)
 	if ( $sth->execute($$domain) != 1 ) { return 0; }
 
 	return 1;
+}
+
+=head2 add_master(\$domain)
+
+Expects a scalar reference domain name to add to the DB as type master.
+Returns 1 on success and 0 on failure.
+
+=cut
+
+sub add_master($)
+{
+        my $self = shift;
+        my $domain = shift;
+
+        my $sth = $self->{'dbh'}->prepare("INSERT INTO domains (name,type) VALUES (?,'MASTER')");
+        if ( $sth->execute($$domain) != 1 ) { return 0; }
+
+        return 1;
 }
 
 =head2 add_slave(\$slave_domain , \$master_ip)
@@ -718,12 +735,30 @@ sub make_domain_native($)
 
 	return 1;
 }
+=head2 make_domain_master(\$domain)
 
+Makes the specified domain a 'MASTER' domain.
+Expects one scalar reference which is the domain name to be updated.
+Returns 1 upon succes and 0 otherwise.
+
+=cut
+
+sub make_domain_master($)
+{
+        my $self = shift;
+        my $domain = shift;
+
+        my $sth = $self->{'dbh'}->prepare("UPDATE domains set type='MASTER' , master='' WHERE name=?");
+        if ( $sth->execute($$domain) != 1 ) { return 0; }
+
+        return 1;
+}
 =head2 get_domain_type(\$domain)
 
 Expects one scalar reference which is the domain name to query for.
 Returns a string containing the PowerDNS 'type' of the domain given or
-an empty string if the domain does not exist in the PowerDNS backend.
+'undef' if the domain does not exist in the backend or an empty string 
+if the domain has no master (i.e. a NATIVE domain).
 
 =cut
 
@@ -744,8 +779,8 @@ sub get_domain_type($)
 
 Expects one scalar reference which is the domain name to query for.
 Returns a string containing the PowerDNS 'master' of the domain given or
-an empty string if the domain does not exist in the PowerDNS backend or
-has no master (i.e. a NATIVE domain).
+'undef' if the domain does not exist in the PowerDNS backend or
+an empty string if the domain has no master (i.e. a NATIVE domain).
 
 =cut
 
@@ -849,6 +884,9 @@ sub increment_serial($)
 	unless ( $pdns->add_domain(\$domain) )
         { print "Could not add domain : $domain \n"; }
 
+        unless ( $pdns->add_master(\$domain) )
+        { print "Could not add master domain : $domain \n"; }
+
 	unless ( $pdns->add_slave(\$domain,\$master) )
         { print "Could not add slave domain : $domain \n"; }
 
@@ -929,6 +967,9 @@ sub increment_serial($)
 	my $domain = 'example.com';
 	$pdns->make_domain_native(\$domain);
 
+        my $domain = 'example.com';
+        $pdns->make_domain_master(\$domain);
+
 	my $domain = 'example.com';
 	my $type = $pdns->get_domain_type(\$domain);
 	if ( $type )
@@ -1004,8 +1045,7 @@ under the same terms as Perl itself.
 
 =head1 VERSION
 
-	0.10
-	$Id: MySQL.pm 1480 2007-12-04 19:29:23Z augie $
+	0.11
 
 =cut
 
