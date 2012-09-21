@@ -13,11 +13,11 @@ PowerDNS::Backend::MySQL - Provides an interface to manipulate PowerDNS data in 
 
 =head1 VERSION
 
-Version 0.11
+Version 0.12
 
 =cut
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 =head1 SYNOPSIS
 
@@ -735,6 +735,7 @@ sub make_domain_native($)
 
 	return 1;
 }
+
 =head2 make_domain_master(\$domain)
 
 Makes the specified domain a 'MASTER' domain.
@@ -753,6 +754,7 @@ sub make_domain_master($)
 
         return 1;
 }
+
 =head2 get_domain_type(\$domain)
 
 Expects one scalar reference which is the domain name to query for.
@@ -1030,6 +1032,10 @@ L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=PowerDNS-Backend-MySQL>
 
 L<http://search.cpan.org/dist/PowerDNS-Backend-MySQL>
 
+=item * Github
+
+L<https://github.com/augieschwer/PowerDNS-Backend-MySQL>
+
 =back
 
 =head1 ACKNOWLEDGEMENTS
@@ -1038,14 +1044,14 @@ I would like to thank Sonic.net for allowing me to release this to the public.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2007 Augie Schwer, all rights reserved.
+Copyright 2012 Augie Schwer, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
 =head1 VERSION
 
-	0.11
+	0.12
 
 =cut
 
